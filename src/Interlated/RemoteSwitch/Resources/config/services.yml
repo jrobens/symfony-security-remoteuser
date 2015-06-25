@@ -1,0 +1,38 @@
+parameters:
+
+    # See http://stackoverflow.com/questions/11180351/symfony2-after-successful-login-event-perform-set-of-actions
+    account.security_listener.class: Interlated\RemoteSwitch\Listener\SecurityListener
+
+services:
+
+    # Redirect users to default index action when switching masquerade.
+    account.security_listener:
+       class: %account.security_listener.class%
+       arguments: ['@security.authorization_checker', '@session', '@doctrine.orm.entity_manager', '@router', '@event_dispatcher']
+       tags:
+         - { name: kernel.event_listener, event: security.authentication.failure, method: onAuthenticationFailure }
+         - { name: kernel.event_listener, event: security.interactive_login, method: onSecurityInteractiveLogin }
+         - { name: kernel.event_listener, event: security.switch_user, method: onSecuritySwitchUser }
+
+    security.authentication.switchuser_listener:
+        class: Interlated\RemoteSwitch\Security\Listener\SwitchUserListener
+        public: false
+        abstract: true
+        arguments: [ "@security.context", "", "@security.user_checker", "", "@security.access.decision_manager", "@?logger", "_switch_user", "ROLE_ALLOWED_TO_SWITCH", "@?event_dispatcher"]
+        tags:
+            - { name: monolog.logger, channel: security }
+
+    #see RemoteUserAuthenticationListener
+    security.authentication.listener.remote_user_switch:
+        class: Interlated\RemoteSwitch\Security\Firewall\PreAuthenticatedWithSwitchUserListener
+        arguments: ["@security.context","@security.authentication.manager", "", "", "@?logger", "@?event_dispatcher"]
+        tags:
+                    - { name: monolog.logger, channel: security }
+
+    webservice_user_provider:
+        class: Interlated\RemoteSwitch\Security\User\WebserviceUserProvider
+        calls:
+        - [setEntityManager , ['@logger', '@doctrine.orm.entity_manager']]
+
+
+
