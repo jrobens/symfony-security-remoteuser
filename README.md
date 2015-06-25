@@ -5,7 +5,8 @@ This fix involves adapting AbstractPreAuthenticatedListener to check for the exi
 
 This is the important (non copied) part of the code:
 
-```if (null !== $token = $this->securityContext->getToken()) {
+```
+if (null !== $token = $this->securityContext->getToken()) {
   if ($token instanceof PreAuthenticatedToken && $this->providerKey == $token->getProviderKey() && $token->isAuthenticated() && $token->getUsername() === $user) {
     return;
   }
@@ -19,7 +20,7 @@ This is the important (non copied) part of the code:
 The token stores the logged in user and returns it with getOriginalUsername.
 
 Store the existing authentication data (passed in $preAuthenticatedData)
-
+```
 /**
  * Constructor.
  */
@@ -43,14 +44,18 @@ if ($roles) {
   $this->setAuthenticated(true);
 }
 }
+```
 
 Getter
 
+```
 public function getOriginalUsername() {
   return $this->original_username;
 }
-Stash changes
+```
 
+Stash changes
+```
 /**
  * {@inheritdoc}
  */
@@ -67,6 +72,8 @@ public function serialize()
    list($this->credentials, $this->providerKey, $this->original_username, $parentStr) = unserialize($str);
    parent::unserialize($parentStr);
  }
+ ```
+
 These changes fit into the context of broader customisation of the Symfony security system. The source code for this is in github.
 
 ### services.yml
@@ -79,12 +86,14 @@ This is in addition to the expected user provider.
 
 Use this security provider
 
+```
 secured_area:
   switch_user: { role: ROLE_ALLOWED_TO_SWITCH, parameter: _masquerade }
   pattern:    ^/
 
   remote_user_switch:
     provider: webservice_user_provider
+```
 
 ### Check that the user provider loads the backing data for your user.
 
