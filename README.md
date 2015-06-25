@@ -5,7 +5,7 @@ This fix involves adapting AbstractPreAuthenticatedListener to check for the exi
 
 This is the important (non copied) part of the code:
 
-`if (null !== $token = $this->securityContext->getToken()) {
+```if (null !== $token = $this->securityContext->getToken()) {
   if ($token instanceof PreAuthenticatedToken && $this->providerKey == $token->getProviderKey() && $token->isAuthenticated() && $token->getUsername() === $user) {
     return;
   }
@@ -14,7 +14,7 @@ This is the important (non copied) part of the code:
     return;
   }
 }
-`
+```
 
 The token stores the logged in user and returns it with getOriginalUsername.
 
